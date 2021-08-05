@@ -9,6 +9,6 @@ package com.mthree.flooringmastery.dao;
  *
  * @author Chuck
  */
-public class FlooringMasteryAuditDaoFileImpl {
+public class FlooringMasteryAuditDaoFileImpl implements FlooringMasteryAuditDao {
     
 }

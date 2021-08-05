@@ -6,6 +6,4 @@ com/mthree/flooringmastery/dao/FlooringMasteryDaoFileImpl.class
 com/mthree/flooringmastery/ui/UserIO.class
 com/mthree/flooringmastery/service/FlooringMasteryServiceLayer.class
 com/mthree/flooringmastery/controller/FlooringMasteryController.class
-com/mthree/flooringmastery/App.class
-com/mthree/flooringmastery/service/FlooringMasteryServiceLayerImpl.class
 com/mthree/flooringmastery/dao/FlooringMasteryAuditDaoFileImpl.class

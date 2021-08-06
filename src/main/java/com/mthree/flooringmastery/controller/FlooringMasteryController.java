@@ -6,6 +6,7 @@
 package com.mthree.flooringmastery.controller;
 
 import com.mthree.flooringmastery.model.Order;
+import com.mthree.flooringmastery.model.Product;
 import com.mthree.flooringmastery.service.FlooringMasteryServiceLayer;
 import com.mthree.flooringmastery.ui.FlooringMasteryView;
 import java.util.List;
@@ -27,6 +28,7 @@ public class FlooringMasteryController {
     public void run() {
         
         boolean keepGoing = true;
+        loadFiles();
         
         while (keepGoing) {
             int menuSelection = getMenuSelection();
@@ -42,6 +44,7 @@ public class FlooringMasteryController {
             }
         }
         
+        writeAllOrdersToBackupFile();
         exitMessage();
     }
     
@@ -59,8 +62,13 @@ public class FlooringMasteryController {
     
     private void createOrder() {
         view.displayCreateOrderBanner();
-        Order newOrder = view.getNewOrderInfo();
-        view.print(service.addOrder(newOrder));
+        List<Product> products = service.getAllProducts();
+        if (products != null) {
+            Order newOrder = view.getNewOrderInfo(service.getAllProducts());
+            view.print(service.addOrder(newOrder));
+        } else {
+            view.displayCreateUnsuccessfulBanner();
+        }
     }
     
     private void editOrder() {
@@ -85,5 +93,21 @@ public class FlooringMasteryController {
     
     private void exitMessage() {
         view.displayExitBanner();
+    }
+    
+    private void writeAllOrdersToBackupFile() {
+        if (service.writeAllOrdersToBackupFile()) {
+            view.displayWriteToBackupSuccessfulBanner();
+        } else {
+            view.displayWriteToBackupUnsuccessfulBanner();
+        }
+    }
+    
+    private void loadFiles() {
+        if (service.loadFiles()) {
+            view.displayLoadFilesSuccessfulBanner();
+        } else {
+            view.displayLoadFilesUnsuccessfulBanner();
+        }
     }
 }

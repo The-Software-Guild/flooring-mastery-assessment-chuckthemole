@@ -6,6 +6,7 @@
 package com.mthree.flooringmastery.ui;
 
 import com.mthree.flooringmastery.model.Order;
+import com.mthree.flooringmastery.model.Product;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -67,7 +68,7 @@ public class FlooringMasteryView {
                 Integer.toString(order.getOrderNumber()),
                 order.getCustomerName(),
                 order.getState(),
-                order.getProductType(),
+                order.getProductType().getProductType(),
                 order.getArea().toString()
         )).forEachOrdered(orderInfo -> {
             io.print(orderInfo);
@@ -89,14 +90,28 @@ public class FlooringMasteryView {
         io.readString("Please hit enter to continue.");
     }
 
-    public Order getNewOrderInfo() {
+    public Order getNewOrderInfo(List<Product> products) {
         String date = io.readString("Please enter the order date (MM/DD/YYYY)");
-        String name = io.readString("Please enter customer name (FIRST LAST)");
+        String name = io.readString("Please enter customer name");
         String state = io.readString("Please enter state (Example: CA)");
-        String type = io.readString("Please enter the product type");
-        String area = io.readString("Please enter the area");
+        for (int i = 0; i < products.size(); i++) {
+            io.print((i + 1) + ". " + 
+                    "Type: " + 
+                    products.get(i).getProductType() + 
+                    "  Cost/sqr ft: $" + 
+                    products.get(i).getCostPerSquareFoot() + 
+                    "  Labor Cost/sqr ft: $" + 
+                    products.get(i).getLaborCostPerSquareFoot());
+        }
+        int type = io.readInt("Please select a product", 1, products.size());
+        String area = io.readString("Please enter the area (100 or greater)");
         try {
-            Order order = new Order(date, name, state, type, new BigDecimal(area));
+            Order order = new Order(
+                    date, 
+                    name.toUpperCase(), 
+                    state.toUpperCase(), 
+                    products.get(type - 1), 
+                    new BigDecimal(area));
             return order;
         } catch (NumberFormatException e) {
             // io.print(e.getMessage());
@@ -120,6 +135,21 @@ public class FlooringMasteryView {
         io.print("\n* * * * * * Create Order Unsuccessful * * * * * *");
     }
     
+    public void displayWriteToBackupSuccessfulBanner() {
+        io.print("\n* * * * * * Write to backup file successful * * * * * *");
+    }
+    
+    public void displayWriteToBackupUnsuccessfulBanner() {
+        io.print("\n* * * * * * Write to backup file unsuccessful * * * * * *");
+    }
+    
+    public void displayLoadFilesSuccessfulBanner() {
+        io.print("\n* * * * * * Load files successful * * * * * *");
+    }
+    
+    public void displayLoadFilesUnsuccessfulBanner() {
+        io.print("\n* * * * * * Load files unsuccessful * * * * * *");
+    }    
     public void print(String s) {
         io.print(s);
     }

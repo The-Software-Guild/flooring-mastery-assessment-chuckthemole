@@ -8,7 +8,7 @@ package com.mthree.flooringmastery.service;
 import com.mthree.flooringmastery.dao.FlooringMasteryAuditDao;
 import com.mthree.flooringmastery.dao.FlooringMasteryDao;
 import com.mthree.flooringmastery.model.Order;
-import com.mthree.flooringmastery.model.States;
+import com.mthree.flooringmastery.model.Product;
 import java.util.List;
 
 /**
@@ -36,30 +36,41 @@ public class FlooringMasteryServiceLayerImpl implements
     public List<Order> getAllOrders(String date) {
         return dao.getAllOrders(date);
     }
+    
+    @Override
+    public List<Product> getAllProducts() {
+        List<Product> products = dao.getAllProducts();
+        if (products != null) {
+            return products;
+        } else {
+            return null;
+        }
+    }
 
     @Override
     public String addOrder(Order order) {
-        StringBuilder sb = new StringBuilder();
         
         if (order == null) {
-            return sb.append("\nEnter a proper value for area").toString();
+            return "\nError: Enter proper values!";
         }
         
         if (!dao.isCorrectDateFormat(order.getOrderDate())) {
-            return sb.append("\nEnter the date in correct format (MM/DD/YYYY)").toString();
+            return "\nError: Enter the date in correct format (MM/DD/YYYY) and as a future date!";
         }
         
-        if (order.getCustomerName().equals("")) {
-            return sb.append("\nCustomer name required!!").toString();
+        if (!Order.isCorrectDateFormat(order.getCustomerName())) {
+            return "\nError: Enter a valid customer name!";
         }
         
         if (order.getState().length() != 2) {
-            return sb.append("\nError: Enter state in correct format (Examples: CA, NJ, ME)").toString();
+            return "\nError: Enter state in correct format (Examples: CA, NJ, ME)";
         }
 
-        if (!States.getStates().contains(order.getState())) {
-            return sb.append("\nError: Enter a valid US state!!").toString();
+        if (!Order.getStates().contains(order.getState())) {
+            return "\nError: Enter a valid US state!!";
         }
+        
+        StringBuilder sb = new StringBuilder();
 
         if (dao.createOrderFile(order.getOrderDate())) {
             sb.append("File created for ").append(order.getOrderDate());
@@ -81,5 +92,22 @@ public class FlooringMasteryServiceLayerImpl implements
     public Order editOrder(String date, int orderNumber) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    
+
+    @Override
+    public boolean writeAllOrdersToBackupFile() {
+        if (dao.writeAllOrdersToBackupFile()) {
+            return true;
+        }
+        // Throw exception
+        return false;
+    }
+
+    @Override
+    public boolean loadFiles() {
+        if(dao.loadFiles()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 }

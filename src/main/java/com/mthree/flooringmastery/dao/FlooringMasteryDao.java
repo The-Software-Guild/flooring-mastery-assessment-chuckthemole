@@ -6,6 +6,7 @@
 package com.mthree.flooringmastery.dao;
 
 import com.mthree.flooringmastery.model.Order;
+import com.mthree.flooringmastery.model.Product;
 import java.util.List;
 
 /**
@@ -20,4 +21,9 @@ public interface FlooringMasteryDao {
     Order editOrder(String date, int orderNumber);
     boolean createOrderFile(String date);
     boolean isCorrectDateFormat(String date);
+    List<Product> loadProductsFromFile();
+    boolean loadFiles();
+    public boolean writeOrderToFile(String file, Order order);
+    public boolean writeAllOrdersToBackupFile();
+    List<Product> getAllProducts();
 }

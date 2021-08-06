@@ -6,6 +6,7 @@
 package com.mthree.flooringmastery.service;
 
 import com.mthree.flooringmastery.model.Order;
+import com.mthree.flooringmastery.model.Product;
 import java.util.List;
 
 /**
@@ -14,8 +15,11 @@ import java.util.List;
  */
 public interface FlooringMasteryServiceLayer {
     List<Order> getAllOrders();
+    List<Product> getAllProducts();
     List<Order> getAllOrders(String date);
     String addOrder(Order order);
     Order removeOrder(String date, int orderNumber);
     Order editOrder(String date, int orderNumber);
+    boolean writeAllOrdersToBackupFile();
+    boolean loadFiles();
 }

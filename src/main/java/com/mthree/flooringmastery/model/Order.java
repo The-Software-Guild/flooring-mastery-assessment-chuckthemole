@@ -6,6 +6,10 @@
 package com.mthree.flooringmastery.model;
 
 import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -17,14 +21,26 @@ public class Order {
     private final String orderDate;
     private String customerName;
     private String state;
-    private String productType;
+    private Product productType;
     private BigDecimal area;
+    
+    private static final String NAME_FORMAT = "([a-zA-Z]|[0-9]|,|\\.| )+";
+    private static final Pattern PATTERN = Pattern.compile(NAME_FORMAT);
+    
+    public enum States {
+        AL, AK, AZ, AR, CA, CO, CT, DE, DC, FL,
+        GA, HI, ID, IL, IN, IA, KS, KY, LA, ME,
+        MD, MA, MI, MN, MS, MO, MT, NB, NV, NH, 
+        NJ, NM, NY, NC, ND, OH, OK, OR, PA, RI,
+        SC, SD, TN, TX, UT, VT, VA, WA, WV, WI,
+        WY
+    }
     
     public Order(
             String orderDate, 
             String customerName,
             String state, 
-            String productType,
+            Product productType,
             BigDecimal area) {
         this.orderDate = orderDate;
         this.customerName = customerName;
@@ -59,11 +75,11 @@ public class Order {
         this.state = state;
     }
     
-    public String getProductType() {
+    public Product getProductType() {
         return productType;
     }
     
-    public void setProductType(String productType) {
+    public void setProductType(Product productType) {
         this.productType = productType;
     }
     
@@ -73,5 +89,21 @@ public class Order {
     
     public void setArea(BigDecimal area) {
         this.area = area;
+    }
+    
+    public static boolean isCorrectDateFormat(String name) {
+        Matcher matcher = PATTERN.matcher(name);
+        return matcher.matches();
+    }
+    
+    public static Set<String> getStates() {
+        States[] states = States.values();
+        Set<String> statesAsSet = new HashSet<>();
+        
+        for (States state : states) {
+            statesAsSet.add(state.toString());
+        }
+        
+        return statesAsSet;
     }
 }

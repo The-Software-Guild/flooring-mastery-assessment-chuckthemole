@@ -1,2 +1,2 @@
 OrderNumber::CustomerName::State::TaxRate::ProductType::Area::CostPerSquareFoot::LaborCostPerSquareFoot::MaterialCost:LaborCost::Tax::Total
-5::HANK::TX::4.45::Tile::601::3.50::4.15::2103.50::2494.15::204.60::4802.25
+6::HENRY::CA::25.00::Wood::400::5.15::4.75::2060.00::1900.00::990.00::4950.00

@@ -6,6 +6,7 @@
 package com.mthree.flooringmastery.model;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 /**
  *
@@ -48,5 +49,27 @@ public class Product {
     
     public BigDecimal getLaborCostPerSquareFoot() {
         return laborCostPerSquareFoot;
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        Product order = (Product) o;
+        
+        if (this.productType.equals(order.productType) &&
+                this.costPerSquareFoot.equals(order.costPerSquareFoot) &&
+                this.laborCostPerSquareFoot.equals(order.laborCostPerSquareFoot)) {
+            return true;
+        }
+        
+        return false;
+    }
+    
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 89 * hash + Objects.hashCode(this.productType);
+        hash = 89 * hash + Objects.hashCode(this.costPerSquareFoot);
+        hash = 89 * hash + Objects.hashCode(this.laborCostPerSquareFoot);
+        return hash;
     }
 }

@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,7 +61,29 @@ public class FlooringMasteryDaoFileImpl implements FlooringMasteryDao {
         
         loadFiles();      
     }
+    
+    public FlooringMasteryDaoFileImpl(boolean isTest) {
+        orders = new HashMap<>();
+        products = new HashMap<>();
+        files = new HashMap<>();
+        taxes = new HashMap<>();
+        
+        List<Product> productsFromFile = loadProductsFromFile();
+        loadTaxes();
 
+        if (productsFromFile != null) {
+            productsFromFile.forEach(product -> {
+                products.put(product.getProductType(), product);
+            });
+        } else {
+            products = null;
+        }
+
+        if (!isTest) {
+            loadFiles();      
+        }
+    }
+    
     @Override
     public List<Order> getAllOrders() {
         return new ArrayList<>(orders.values());
@@ -75,6 +98,11 @@ public class FlooringMasteryDaoFileImpl implements FlooringMasteryDao {
     public List<Product> getAllProducts() {
         return new ArrayList<>(products.values());
     }
+    
+    @Override
+    public Map<String, BigDecimal> getAllTaxes() {
+        return taxes;
+    }    
     
     @Override
     public boolean addOrder(int orderNumber, Order order) {
@@ -208,8 +236,8 @@ public class FlooringMasteryDaoFileImpl implements FlooringMasteryDao {
                 order.setTotal(getTotal(order));
                 orders.put(Integer.parseInt(orderData[0]), order);
                 
-                System.out.println("\nSuccess loading file: ");
-                System.out.println(file);
+                //System.out.println("\nSuccess loading file: ");
+                //System.out.println(file);
             }
         } catch (FileNotFoundException ex) {
             System.out.println("\nFailure loading file: ");
@@ -226,7 +254,7 @@ public class FlooringMasteryDaoFileImpl implements FlooringMasteryDao {
             if (file.isFile()) {
                 String date = parseDateFromFile(file.getName());
                 if (date != null) {
-                    System.out.println("Parsed name is " + date);
+                    //System.out.println("Parsed name is " + date);
                     files.put(date, new OrderFile(file.getName(), true));
                     loadOrdersFromFile(PATH_TO_ORDERS + file.getName());           
                 } else {
@@ -240,7 +268,7 @@ public class FlooringMasteryDaoFileImpl implements FlooringMasteryDao {
                 Order.setOrderCount(order.getOrderNumber());
             }
         }
-        System.out.println("Order count is: " + Order.getOrderCount());
+        //System.out.println("Order count is: " + Order.getOrderCount());
         
         return true;
     }
@@ -258,8 +286,8 @@ public class FlooringMasteryDaoFileImpl implements FlooringMasteryDao {
                 
                 taxes.put(taxData[0], new BigDecimal(taxData[2]));
                 
-                System.out.println("\nSuccess loading tax file: ");
-                System.out.println(file);
+                //System.out.println("\nSuccess loading tax file: ");
+                //System.out.println(file);
             }
             
         } catch (FileNotFoundException ex) {
@@ -303,17 +331,17 @@ public class FlooringMasteryDaoFileImpl implements FlooringMasteryDao {
             PrintWriter out = new PrintWriter(new FileWriter(BACKUP_FILE_PATH));
             out.println(FILE_HEADER);
             
-            int i = 0;
-            while (true) {
-                i++;
-                if (!orders.containsKey(i)) {
-                    System.out.println("Does not contain key " + i);
-                    break;
-                }
-                Order order = orders.get(i);
-
-                out.println(getOrderAsStringForFile(order));         
+            List<String> orderList = new ArrayList<>();
+            for (Order order : orders.values()) {
+                orderList.add(getOrderAsStringForFile(order));
             }
+            
+            Collections.sort(orderList);
+            
+            for (String order : orderList) {
+                out.println(order);
+            }
+            
             out.flush();
             out.close(); 
             return true;

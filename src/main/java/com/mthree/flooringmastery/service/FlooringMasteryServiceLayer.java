@@ -15,8 +15,8 @@ import java.util.List;
  */
 public interface FlooringMasteryServiceLayer {
     List<Order> getAllOrders();
+    List<Order> getOrdersFromDate(String date);
     List<Product> getAllProducts();
-    List<Order> getAllOrders(String date);
     String addOrder(Order order);
     Order removeOrder(String date, int orderNumber);
     String editOrder(Order newOrder, int oldOrderNumber);

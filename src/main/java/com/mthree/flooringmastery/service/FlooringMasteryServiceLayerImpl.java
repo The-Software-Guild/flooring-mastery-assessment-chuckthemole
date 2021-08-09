@@ -10,14 +10,14 @@ import com.mthree.flooringmastery.dao.FlooringMasteryDao;
 import com.mthree.flooringmastery.model.Order;
 import com.mthree.flooringmastery.model.Product;
 import java.math.BigDecimal;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
  *
  * @author Chuck
  */
-public class FlooringMasteryServiceLayerImpl implements 
-        FlooringMasteryServiceLayer {
+public class FlooringMasteryServiceLayerImpl implements FlooringMasteryServiceLayer {
     FlooringMasteryDao dao;
     FlooringMasteryAuditDao auditDao;
 
@@ -34,8 +34,25 @@ public class FlooringMasteryServiceLayerImpl implements
     }
     
     @Override
-    public List<Order> getAllOrders(String date) {
-        return dao.getAllOrders(date);
+    public List<Order> getOrdersFromDate(String date) {
+        List<Order> orders = dao.getAllOrders();
+        List<Order> filteredOrders = new LinkedList<>();
+        
+        for (Order order : orders) {
+            if (order.getOrderDate().equals(date)) {
+                filteredOrders.add(order);
+            }
+        }
+        
+        if (filteredOrders.isEmpty()) {
+            try {
+                throw new InvalidDateException("ERROR: No orders for the given date.");
+            } catch (InvalidDateException e) {
+                return null;
+            }
+        }
+        
+        return filteredOrders;
     }
     
     @Override
@@ -44,7 +61,11 @@ public class FlooringMasteryServiceLayerImpl implements
         if (products != null) {
             return products;
         } else {
-            return null;
+            try {
+                throw new NoProductsException("ERROR: No products.");
+            } catch (NoProductsException e) {
+                return null;
+            }
         }
     }
 
@@ -76,7 +97,13 @@ public class FlooringMasteryServiceLayerImpl implements
             return "\nError: Enter a valid US state!!";
         }
         
+        if (!dao.getAllTaxes().containsKey(order.getState())) {
+            Order.decrementOrderCount();
+            return "\nError: We don't sell to that state. Enter a state in the tax file.";
+        }
+        
         if (order.getArea().compareTo(BigDecimal.TEN.multiply(BigDecimal.TEN)) < 0) {
+            Order.decrementOrderCount();
             return "\nError: Enter an area 100 or greater!!";
         }
         
@@ -123,6 +150,10 @@ public class FlooringMasteryServiceLayerImpl implements
         if (!Order.getStates().contains(newOrder.getState())) {
             return "\nError: Enter a valid US state!!";
         }
+        
+        if (!dao.getAllTaxes().containsKey(newOrder.getState())) {
+            return "\nError: We don't sell to that state. Enter a state in the tax file.";
+        }    
         
         if (newOrder.getArea().compareTo(BigDecimal.TEN.multiply(BigDecimal.TEN)) < 0) {
             return "\nError: Enter an area 100 or greater!!";

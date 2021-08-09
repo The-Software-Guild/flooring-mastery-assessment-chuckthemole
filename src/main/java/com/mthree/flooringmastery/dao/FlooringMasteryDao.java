@@ -7,7 +7,9 @@ package com.mthree.flooringmastery.dao;
 
 import com.mthree.flooringmastery.model.Order;
 import com.mthree.flooringmastery.model.Product;
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -16,6 +18,7 @@ import java.util.List;
 public interface FlooringMasteryDao {
     List<Order> getAllOrders();
     List<Order> getAllOrders(String date);
+    Map<String, BigDecimal> getAllTaxes();
     boolean addOrder(int orderNumber, Order order);
     Order removeOrder(String date, int orderNumber);
     Order editOrder(Order newOrder, int oldOrderNumber);

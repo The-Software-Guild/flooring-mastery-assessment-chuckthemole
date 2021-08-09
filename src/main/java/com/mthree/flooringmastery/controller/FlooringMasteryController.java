@@ -33,7 +33,7 @@ public class FlooringMasteryController {
             int menuSelection = getMenuSelection();
 
             switch (menuSelection) {
-                case 1 -> displayOrders();
+                case 1 -> displayOrdersFromDate();
                 case 2 -> createOrder();
                 case 3 -> editOrder();
                 case 4 -> removeOrder();
@@ -43,7 +43,7 @@ public class FlooringMasteryController {
             }
         }
         
-        writeAllOrdersToBackupFile();
+        // writeAllOrdersToBackupFile();
         writeAllOrdersToFiles();
         exitMessage();
     }
@@ -54,8 +54,20 @@ public class FlooringMasteryController {
         view.displayOrderList(orders);
     }
     
+    private void displayOrdersFromDate() {
+        view.displayOrderListBanner();
+        String date = view.getOrderDate();
+        
+        List<Order> orders = service.getOrdersFromDate(date);
+        if (orders != null) {
+            view.displayOrderList(orders);
+        } else {
+            view.displayDisplayListUnsuccessfulBanner();
+        }
+    }
+    
     private void displayOrders(String date) {
-        List<Order> orders = service.getAllOrders(date);
+        List<Order> orders = service.getOrdersFromDate(date);
         view.displayOrderListByDateBanner(date);
         view.displayOrderListByDate(orders);
     }
@@ -76,7 +88,7 @@ public class FlooringMasteryController {
         String dateAndOrderNumber = view.getEditOrderDateOrderNumber();
         String[] dateAndOrderNumberSplit = dateAndOrderNumber.split("::");
         
-        List<Order> orders = service.getAllOrders(dateAndOrderNumberSplit[0]);
+        List<Order> orders = service.getOrdersFromDate(dateAndOrderNumberSplit[0]);
         Order foundOrder = null;
         for(Order order : orders) {
             if (order.getOrderNumber() == Integer.parseInt(dateAndOrderNumberSplit[1])) {

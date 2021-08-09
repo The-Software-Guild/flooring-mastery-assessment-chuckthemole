@@ -8,6 +8,7 @@ package com.mthree.flooringmastery.model;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -33,7 +34,7 @@ public class Order {
     private static final String NAME_FORMAT = "([a-zA-Z]|[0-9]|,|\\.| )+";
     private static final Pattern PATTERN = Pattern.compile(NAME_FORMAT);
     
-    public enum States {
+    public static enum States {
         AL, AK, AZ, AR, CA, CO, CT, DE, DC, FL,
         GA, HI, ID, IL, IN, IA, KS, KY, LA, ME,
         MD, MA, MI, MN, MS, MO, MT, NB, NV, NH, 
@@ -181,5 +182,31 @@ public class Order {
         }
         
         return statesAsSet;
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        Order order = (Order) o;
+        
+        if (this.customerName.equals(order.customerName) &&
+                this.state.equals(order.state) &&
+                this.productType.equals(order.productType) &&
+                this.area.equals(order.area)) {
+            return true;
+        }
+        
+        return false;
+    }
+    
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 89 * hash + Objects.hashCode(this.orderNumber);
+        hash = 89 * hash + Objects.hashCode(this.orderDate);
+        hash = 89 * hash + Objects.hashCode(this.customerName);
+        hash = 89 * hash + Objects.hashCode(this.state);
+        hash = 89 * hash + Objects.hashCode(this.productType);
+        hash = 89 * hash + Objects.hashCode(this.area);
+        return hash;
     }
 }

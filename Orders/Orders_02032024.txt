@@ -1,2 +1,2 @@
 OrderNumber::CustomerName::State::TaxRate::ProductType::Area::CostPerSquareFoot::LaborCostPerSquareFoot::MaterialCost:LaborCost::Tax::Total
-5::HANK::TX::4.45::Tile::601::3.50::4.15::2103.50::2494.15::204.60::4802.25
+7::RANDY::KY::6.00::Carpet::201::2.25::2.10::452.25::422.10::52.47::926.82

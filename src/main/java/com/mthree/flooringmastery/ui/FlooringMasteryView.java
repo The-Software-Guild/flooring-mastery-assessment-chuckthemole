@@ -38,6 +38,10 @@ public class FlooringMasteryView {
         return io.readInt("Please select from the above choices.", 1, 6);
     }
     
+    public void displayDisplayListUnsuccessfulBanner() {
+        io.print("* * * * * * Display orders unsuccessful * * * * * *");
+    }
+    
     public void displayOrderListBanner() {
         io.print("* * * * * * All Orders * * * * * *");
     }
@@ -244,5 +248,10 @@ public class FlooringMasteryView {
             // io.print(e.getMessage());
             return null;
         }
+    }
+    
+    public String getOrderDate() {
+        String date = io.readString("Please enter the order date (MM/DD/YYYY)");
+        return date;
     }
 }

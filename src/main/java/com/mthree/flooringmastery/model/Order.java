@@ -6,6 +6,7 @@
 package com.mthree.flooringmastery.model;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -23,6 +24,11 @@ public class Order {
     private String state;
     private Product productType;
     private BigDecimal area;
+    private BigDecimal taxRate;
+    private BigDecimal materialCost;
+    private BigDecimal laborCost;
+    private BigDecimal tax;
+    private BigDecimal total;
     
     private static final String NAME_FORMAT = "([a-zA-Z]|[0-9]|,|\\.| )+";
     private static final Pattern PATTERN = Pattern.compile(NAME_FORMAT);
@@ -49,6 +55,22 @@ public class Order {
         this.area = area;
         Order.orderCount++;
         this.orderNumber = orderCount;
+    }
+    
+    public Order(
+            String orderDate, 
+            String customerName,
+            String state, 
+            Product productType,
+            BigDecimal area,
+            int orderNumber) {
+        this.orderDate = orderDate;
+        this.customerName = customerName;
+        this.state = state;
+        this.productType = productType;
+        this.area = area;
+        Order.orderCount++;
+        this.orderNumber = orderNumber;
     }
     
     public String getOrderDate() {
@@ -89,6 +111,60 @@ public class Order {
     
     public void setArea(BigDecimal area) {
         this.area = area;
+    }
+    
+    public static int getOrderCount() {
+        return orderCount;
+    }
+    
+    public static void setOrderCount(int count) {
+        orderCount = count;
+    }
+    
+    public void setTaxRate(BigDecimal taxRate) {
+        this.taxRate = taxRate.setScale(2, RoundingMode.CEILING);
+    }
+    
+    public BigDecimal getTaxRate() {
+        return taxRate;
+    }
+    
+    public void setMaterialCost(BigDecimal materialCost) {
+        this.materialCost = materialCost.setScale(2, RoundingMode.CEILING);
+    }
+    
+    public BigDecimal getMaterialCost() {
+        return materialCost;
+    }
+    
+    public void setLaborCost(BigDecimal laborCost) {
+        this.laborCost = laborCost.setScale(2, RoundingMode.CEILING);
+    }
+    
+    public BigDecimal getLaborCost() {
+        return laborCost;
+    }
+    
+    public void setTax(BigDecimal tax) {
+        this.tax = tax.setScale(2, RoundingMode.CEILING);
+    }
+    
+    public BigDecimal getTax() {
+        return tax;
+    }
+    
+    public void setTotal(BigDecimal total) {
+        this.total = total.setScale(2, RoundingMode.CEILING);
+    }    
+    
+    public BigDecimal getTotal() {
+        return total;
+    }
+    
+    public static void decrementOrderCount() {
+        if (orderCount > 0) {
+            orderCount--;
+        }
     }
     
     public static boolean isCorrectDateFormat(String name) {

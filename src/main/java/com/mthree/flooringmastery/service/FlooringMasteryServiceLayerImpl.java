@@ -9,6 +9,7 @@ import com.mthree.flooringmastery.dao.FlooringMasteryAuditDao;
 import com.mthree.flooringmastery.dao.FlooringMasteryDao;
 import com.mthree.flooringmastery.model.Order;
 import com.mthree.flooringmastery.model.Product;
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -51,46 +52,88 @@ public class FlooringMasteryServiceLayerImpl implements
     public String addOrder(Order order) {
         
         if (order == null) {
+            Order.decrementOrderCount();
             return "\nError: Enter proper values!";
         }
         
         if (!dao.isCorrectDateFormat(order.getOrderDate())) {
+            Order.decrementOrderCount();
             return "\nError: Enter the date in correct format (MM/DD/YYYY) and as a future date!";
         }
         
         if (!Order.isCorrectDateFormat(order.getCustomerName())) {
+            Order.decrementOrderCount();
             return "\nError: Enter a valid customer name!";
         }
         
         if (order.getState().length() != 2) {
+            Order.decrementOrderCount();
             return "\nError: Enter state in correct format (Examples: CA, NJ, ME)";
         }
 
         if (!Order.getStates().contains(order.getState())) {
+            Order.decrementOrderCount();
             return "\nError: Enter a valid US state!!";
         }
         
-        StringBuilder sb = new StringBuilder();
-
-        if (dao.createOrderFile(order.getOrderDate())) {
-            sb.append("File created for ").append(order.getOrderDate());
-        } 
-
+        if (order.getArea().compareTo(BigDecimal.TEN.multiply(BigDecimal.TEN)) < 0) {
+            return "\nError: Enter an area 100 or greater!!";
+        }
+        
+        // Success adding order
         if (dao.addOrder(order.getOrderNumber(), order)) {
-            sb.append("\nOrder added!");
+            return "\nOrder added!";
         }
 
-        return sb.toString();
+        return "\nError adding order!";
     }
 
     @Override
     public Order removeOrder(String date, int orderNumber) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        List<Order> orders = dao.getAllOrders();
+        
+        for (Order order : orders) {
+            if (order.getOrderDate().equals(date) && order.getOrderNumber() == orderNumber) {
+                return dao.removeOrder(date, orderNumber);
+            }
+        }
+        
+        return null;
     }
 
     @Override
-    public Order editOrder(String date, int orderNumber) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public String editOrder(Order newOrder, int oldOrderNumber) {
+        
+        if (newOrder == null) {
+            return "\nError: Enter proper values!";
+        }
+        
+        if (!dao.isCorrectDateFormat(newOrder.getOrderDate())) {
+            return "\nError: Enter the date in correct format (MM/DD/YYYY) and as a future date!";
+        }
+        
+        if (!Order.isCorrectDateFormat(newOrder.getCustomerName())) {
+            return "\nError: Enter a valid customer name!";
+        }
+        
+        if (newOrder.getState().length() != 2) {
+            return "\nError: Enter state in correct format (Examples: CA, NJ, ME)";
+        }
+
+        if (!Order.getStates().contains(newOrder.getState())) {
+            return "\nError: Enter a valid US state!!";
+        }
+        
+        if (newOrder.getArea().compareTo(BigDecimal.TEN.multiply(BigDecimal.TEN)) < 0) {
+            return "\nError: Enter an area 100 or greater!!";
+        }
+        
+        Order order = dao.editOrder(newOrder, oldOrderNumber);
+
+        if (order != null) {
+            return "\nEdit order successful!";
+        }
+        return "\nError editting order!";
     }
 
     @Override
@@ -101,13 +144,14 @@ public class FlooringMasteryServiceLayerImpl implements
         // Throw exception
         return false;
     }
-
+    
     @Override
-    public boolean loadFiles() {
-        if(dao.loadFiles()) {
+    public boolean writeAllOrdersToFiles() {
+        if (dao.writeAllOrdersToFiles()) {
             return true;
-        } else {
-            return false;
         }
+        // Throw exception
+        return false;
+        
     }
 }

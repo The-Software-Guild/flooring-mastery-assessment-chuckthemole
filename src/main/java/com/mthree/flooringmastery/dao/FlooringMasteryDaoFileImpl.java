@@ -17,14 +17,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.Set;
-import java.util.logging.Level;
 
 /**
  *
@@ -33,10 +29,12 @@ import java.util.logging.Level;
 public class FlooringMasteryDaoFileImpl implements FlooringMasteryDao {
     private Map<Integer, Order> orders;
     private Map<String, Product> products;
+    private Map<String, BigDecimal> taxes;
     private static Map<String, OrderFile> files;
     private static final String PRODUCT_FILE_PATH = "Data/Products.txt";
     private static final String BACKUP_FILE_PATH = "Backup/DataExport.txt";
     private static final String PATH_TO_ORDERS = "Orders/";
+    private static final String PATH_TO_TAXES = "Data/Taxes.txt";
     private static final String FILE_HEADER = 
             "OrderNumber::CustomerName::State::TaxRate::" + 
             "ProductType::Area::CostPerSquareFoot::" + 
@@ -47,8 +45,10 @@ public class FlooringMasteryDaoFileImpl implements FlooringMasteryDao {
         orders = new HashMap<>();
         products = new HashMap<>();
         files = new HashMap<>();
+        taxes = new HashMap<>();
         
         List<Product> productsFromFile = loadProductsFromFile();
+        loadTaxes();
         
         if (productsFromFile != null) {
             productsFromFile.forEach(product -> {
@@ -57,6 +57,8 @@ public class FlooringMasteryDaoFileImpl implements FlooringMasteryDao {
         } else {
             products = null;
         }
+        
+        loadFiles();      
     }
 
     @Override
@@ -76,20 +78,72 @@ public class FlooringMasteryDaoFileImpl implements FlooringMasteryDao {
     
     @Override
     public boolean addOrder(int orderNumber, Order order) {
+        
+        order.setTaxRate(taxes.get(order.getState()));
+        order.setMaterialCost(getMaterialCost(order));
+        order.setLaborCost(getLaborCost(order));
+        order.setTax(getTax(order));
+        order.setTotal(getTotal(order));
         orders.put(orderNumber, order);
-        writeOrderToFile(
-                files.get(order.getOrderDate()).getFileName(), order);
+
         return true;
+    }
+    
+    private BigDecimal getMaterialCost(Order order) {
+        return order
+                .getProductType()
+                .getCostPerSquareFoot()
+                .multiply(order.getArea());
+    }
+    
+    private BigDecimal getLaborCost(Order order) {
+        return order
+                .getProductType()
+                .getLaborCostPerSquareFoot()
+                .multiply(order.getArea());
+    }
+    
+    private BigDecimal getTax(Order order) {
+        return (order.getMaterialCost()
+                .add(order.getLaborCost()))
+                .multiply(order.getTaxRate()
+                        .divide(BigDecimal.TEN)
+                        .divide(BigDecimal.TEN));
+    }
+    
+    private BigDecimal getTotal(Order order) {
+        return order.getMaterialCost()
+                .add(order.getLaborCost())
+                .add(order.getTax());
     }
 
     @Override
-    public Order removeOrder(String date, int orderNumber) {
+    public Order removeOrder(String date, int orderNumber) {     
         return orders.remove(orderNumber);
     }
 
     @Override
-    public Order editOrder(String date, int orderNumber) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public Order editOrder(Order newOrder, int oldOrderNumber) {
+        
+        if (orders.containsKey(oldOrderNumber)) {
+            if (orders.get(oldOrderNumber).getOrderDate().equals(newOrder.getOrderDate())) { 
+
+                orders.get(oldOrderNumber).setCustomerName(newOrder.getCustomerName());
+                orders.get(oldOrderNumber).setState(newOrder.getState());
+                orders.get(oldOrderNumber).setProductType(newOrder.getProductType());
+                orders.get(oldOrderNumber).setArea(newOrder.getArea());
+                
+                orders.get(oldOrderNumber).setTaxRate(taxes.get(orders.get(oldOrderNumber).getState()));
+                orders.get(oldOrderNumber).setMaterialCost(getMaterialCost(orders.get(oldOrderNumber)));
+                orders.get(oldOrderNumber).setLaborCost(getLaborCost(orders.get(oldOrderNumber)));
+                orders.get(oldOrderNumber).setTax(getTax(orders.get(oldOrderNumber)));
+                orders.get(oldOrderNumber).setTotal(getTotal(orders.get(oldOrderNumber)));
+                
+                return orders.get(oldOrderNumber);
+            }
+        }
+        
+        return null;
     }
 
     @Override
@@ -108,7 +162,6 @@ public class FlooringMasteryDaoFileImpl implements FlooringMasteryDao {
         return OrderFile.isCorrectDateFormat(date);
     }
 
-    @Override
     public List<Product> loadProductsFromFile() {
         Scanner sc;
         List<Product> productsFromFile = new ArrayList<>();
@@ -132,7 +185,39 @@ public class FlooringMasteryDaoFileImpl implements FlooringMasteryDao {
         }
     }
     
-    @Override
+    private void loadOrdersFromFile(String file) {
+        Scanner sc;
+        
+        try {
+            sc = new Scanner(new BufferedReader(new FileReader(file)));
+            sc.nextLine();
+            while (sc.hasNextLine()) {
+                String currentLine = sc.nextLine();
+                String[] orderData = currentLine.split("::");
+                Order order = new Order(
+                        parseDateFromFile(file), // orderDate
+                        orderData[1], // customerName
+                        orderData[2], // state
+                        products.get(orderData[4]), // productType
+                        new BigDecimal(orderData[5]), // area
+                        Integer.parseInt(orderData[0])); // orderNumber
+                order.setTaxRate(taxes.get(order.getState()));
+                order.setMaterialCost(getMaterialCost(order));
+                order.setLaborCost(getLaborCost(order));
+                order.setTax(getTax(order));
+                order.setTotal(getTotal(order));
+                orders.put(Integer.parseInt(orderData[0]), order);
+                
+                System.out.println("\nSuccess loading file: ");
+                System.out.println(file);
+            }
+        } catch (FileNotFoundException ex) {
+            System.out.println("\nFailure loading file: ");
+            System.out.println(ex.getMessage());
+            System.out.println();
+        }    
+    }
+    
     public boolean loadFiles() {        
         File folder = new File(PATH_TO_ORDERS);
         File[] listOfFiles = folder.listFiles();
@@ -143,12 +228,45 @@ public class FlooringMasteryDaoFileImpl implements FlooringMasteryDao {
                 if (date != null) {
                     System.out.println("Parsed name is " + date);
                     files.put(date, new OrderFile(file.getName(), true));
-                    loadOrdersFromFile(file.getName());
+                    loadOrdersFromFile(PATH_TO_ORDERS + file.getName());           
                 } else {
                     System.out.println("Could not load " + file.getName());
                 }
             } 
         }
+        
+        for(Order order : orders.values()) {
+            if (order.getOrderNumber() > Order.getOrderCount()) {
+                Order.setOrderCount(order.getOrderNumber());
+            }
+        }
+        System.out.println("Order count is: " + Order.getOrderCount());
+        
+        return true;
+    }
+    
+    public boolean loadTaxes() {
+        File file = new File(PATH_TO_TAXES);
+        Scanner sc;
+        
+        try {
+            sc = new Scanner(new BufferedReader(new FileReader(file)));
+            sc.nextLine();
+            while (sc.hasNextLine()) {
+                String currentLine = sc.nextLine();
+                String[] taxData = currentLine.split(",");
+                
+                taxes.put(taxData[0], new BigDecimal(taxData[2]));
+                
+                System.out.println("\nSuccess loading tax file: ");
+                System.out.println(file);
+            }
+            
+        } catch (FileNotFoundException ex) {
+            System.out.println("\nFailure loading tax file: ");
+            System.out.println(ex.getMessage());
+            System.out.println();
+        } 
         
         return true;
     }
@@ -158,19 +276,7 @@ public class FlooringMasteryDaoFileImpl implements FlooringMasteryDao {
 
         try {
             PrintWriter out = new PrintWriter(new FileWriter(file, true));
-            out.println(order.getOrderNumber() + "::" + 
-                    order.getCustomerName() + "::" + 
-                    order.getState() + "::" +
-                    //order.getTaxRate() + "::" +
-                    order.getProductType().getProductType() + "::" +
-                    order.getArea().toString() + "::" +
-                    order.getProductType().getCostPerSquareFoot() + "::" +
-                    order.getProductType().getLaborCostPerSquareFoot() + "::" //+
-                    //order.getMaterialCost() + "::" +
-                    //order.getLaborCost() + "::" +
-                    //order.getTax() + "::" +
-                    //order.getTotal()
-                    );
+            out.println(getOrderAsStringForFile(order));
             out.flush();
             out.close();
             return true;
@@ -178,12 +284,24 @@ public class FlooringMasteryDaoFileImpl implements FlooringMasteryDao {
             return false;
         }
     }
+    
+    @Override
+    public boolean writeAllOrdersToFiles() {
+        deleteAllOrderFiles();
+        files = new HashMap<>();
+        for (Order order : orders.values()) {          
+            createOrderFile(order.getOrderDate());
+            writeOrderToFile(
+                files.get(order.getOrderDate()).getFileName(), order);
+        }
+        return true;
+    }
 
     @Override
     public boolean writeAllOrdersToBackupFile() {
         try {
             PrintWriter out = new PrintWriter(new FileWriter(BACKUP_FILE_PATH));
-                out.println(FILE_HEADER);
+            out.println(FILE_HEADER);
             
             int i = 0;
             while (true) {
@@ -194,20 +312,7 @@ public class FlooringMasteryDaoFileImpl implements FlooringMasteryDao {
                 }
                 Order order = orders.get(i);
 
-                // PrintWriter out = new PrintWriter(new FileWriter(BACKUP_FILE_PATH, true));
-                out.println(order.getOrderNumber() + "::" + 
-                        order.getCustomerName() + "::" + 
-                        order.getState() + "::" +
-                        //order.getTaxRate() + "::" +
-                        order.getProductType().getProductType() + "::" +
-                        order.getArea().toString() + "::" +
-                        order.getProductType().getCostPerSquareFoot() + "::" +
-                        order.getProductType().getLaborCostPerSquareFoot() + "::" //+
-                        //order.getMaterialCost() + "::" +
-                        //order.getLaborCost() + "::" +
-                        //order.getTax() + "::" +
-                        //order.getTotal()
-                        );           
+                out.println(getOrderAsStringForFile(order));         
             }
             out.flush();
             out.close(); 
@@ -239,26 +344,40 @@ public class FlooringMasteryDaoFileImpl implements FlooringMasteryDao {
         }
     }
     
-    private void loadOrdersFromFile(String file) {
-        Scanner sc;
-        List<Product> ordersFromFile = new ArrayList<>();
+    private String getOrderAsStringForFile(Order order) {
+        StringBuilder sb = new StringBuilder();
         
-        try {
-            sc = new Scanner(new BufferedReader(new FileReader(file)));
-            sc.nextLine();
-            while (sc.hasNextLine()) {
-                String currentLine = sc.nextLine();
-                String[] orderData = currentLine.split("::");
-                Order order = new Order(
-                        parseDateFromFile(file), // orderDate
-                        orderData[1], // customerName
-                        orderData[2], // state
-                        products.get(orderData[3]), // productType
-                        new BigDecimal(orderData[4])); //area
-                orders.put(Integer.parseInt(orderData[0]), order);
-            }
-        } catch (FileNotFoundException ex) {
-            System.out.println(ex.getMessage());
-        }    
+        sb.append(order.getOrderNumber())
+                .append("::")
+                .append(order.getCustomerName())
+                .append("::")
+                .append(order.getState())
+                .append("::")
+                .append(order.getTaxRate())
+                .append("::")
+                .append(order.getProductType().getProductType())
+                .append("::")
+                .append(order.getArea().toString())
+                .append("::")
+                .append(order.getProductType().getCostPerSquareFoot())
+                .append("::")
+                .append(order.getProductType().getLaborCostPerSquareFoot())
+                .append("::")
+                .append(order.getMaterialCost())
+                .append("::")
+                .append(order.getLaborCost())
+                .append("::")
+                .append(order.getTax())
+                .append("::")
+                .append(order.getTotal());
+        
+        return sb.toString();
+    }
+    
+    private boolean deleteAllOrderFiles() {
+        for(File file: (new File(PATH_TO_ORDERS)).listFiles()) {
+            file.delete();
+        }
+        return true;
     }
 }

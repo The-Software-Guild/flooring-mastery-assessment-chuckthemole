@@ -19,7 +19,7 @@ public interface FlooringMasteryServiceLayer {
     List<Order> getAllOrders(String date);
     String addOrder(Order order);
     Order removeOrder(String date, int orderNumber);
-    Order editOrder(String date, int orderNumber);
+    String editOrder(Order newOrder, int oldOrderNumber);
+    boolean writeAllOrdersToFiles();
     boolean writeAllOrdersToBackupFile();
-    boolean loadFiles();
 }

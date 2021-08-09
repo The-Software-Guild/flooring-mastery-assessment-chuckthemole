@@ -22,6 +22,7 @@ public class FlooringMasteryView {
     }
 
     public int printMenuAndGetSelection() {
+        io.print("");
         io.print("* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *");
         io.print("* <<Flooring Program>>");
         io.print("* 1. Display Orders");
@@ -61,15 +62,79 @@ public class FlooringMasteryView {
         io.print("\n* * * * * * Export All Data * * * * * *");
     }
     
+    public void displayExitBanner() {
+        io.print("Good Bye!!!");
+    }
+
+    public void displayUnknownCommandBanner() {
+        io.print("Unknown Command!!!");
+    }
+    
+    public void displayCreateSuccessBanner() {
+        io.print("\n* * * * * * Create Order Successful * * * * * *");
+    }
+    
+    public void displayCreateUnsuccessfulBanner() {
+        io.print("\n* * * * * * Create Order Unsuccessful * * * * * *");
+    }
+    
+    public void displayWriteToBackupSuccessfulBanner() {
+        io.print("\n* * * * * * Write to backup file successful * * * * * *");
+    }
+    
+    public void displayWriteToBackupUnsuccessfulBanner() {
+        io.print("\n* * * * * * Write to backup file unsuccessful * * * * * *");
+    }
+    
+    public void displayWriteToFilesSuccessfulBanner() {
+        io.print("\n* * * * * * Write to files successful * * * * * *");
+    }
+    
+    public void displayWriteToFilesUnsuccessfulBanner() {
+        io.print("\n* * * * * * Write to files unsuccessful * * * * * *");
+    }    
+    public void displayLoadFilesSuccessfulBanner() {
+        io.print("\n* * * * * * Load files successful * * * * * *");
+    }
+    
+    public void displayLoadFilesUnsuccessfulBanner() {
+        io.print("\n* * * * * * Load files unsuccessful * * * * * *");
+    }   
+
+    public void displayRemoveOrderSuccessfulBanner() {
+        io.print("\n* * * * * * Remove Order Successful * * * * * *");
+    }
+
+    public void displayRemoveOrderUnsuccessfulBanner() {
+        io.print("\n* * * * * * Remove Order Unsuccessful * * * * * *");
+    }   
+    
+    public void displayEditOrderSuccessfulBanner() {
+        io.print("\n* * * * * * Found Order to Edit * * * * * *");
+    }  
+    
+    public void displayEditOrderUnsuccessfulBanner() {
+        io.print("\n* * * * * * Can't Find Order to Edit * * * * * *");
+    } 
+    
+    public void print(String s) {
+        io.print(s);
+    }
+    
     public void displayOrderList(List<Order> orders) {
         orders.stream().map(order -> String.format(
-                "* %s \n  Order Number: %s  Name: %s  State: %s  Product: %s  Area: %s",
+                "* %s \n  Order Number: %s  Name: %s  State: %s  Product: %s  Area: %s  " +
+                        "Material Cost: $%s  Labor Cost: $%s  Tax: $%s  Total: $%s",
                 order.getOrderDate(),
                 Integer.toString(order.getOrderNumber()),
                 order.getCustomerName(),
                 order.getState(),
                 order.getProductType().getProductType(),
-                order.getArea().toString()
+                order.getArea().toString(),
+                order.getMaterialCost().toString(),
+                order.getLaborCost().toString(),
+                order.getTax().toString(),
+                order.getTotal().toString()               
         )).forEachOrdered(orderInfo -> {
             io.print(orderInfo);
         });
@@ -78,12 +143,17 @@ public class FlooringMasteryView {
     
     public void displayOrderListByDate(List<Order> orders) {       
         orders.stream().map(order -> String.format(
-                "* Order Number: %s  Name: %s  State: %s  Product: %s  Area: %s",
+                "* Order Number: %s  Name: %s  State: %s  Product: %s  Area: %s  " +
+                        "Material Cost: $%s  Labor Cost: $%s  Tax: $%s  Total: $%s",
                 Integer.toString(order.getOrderNumber()),
                 order.getCustomerName(),
                 order.getState(),
                 order.getProductType(),
-                order.getArea().toString()
+                order.getArea().toString(),
+                order.getMaterialCost().toString(),
+                order.getLaborCost().toString(),
+                order.getTax().toString(),
+                order.getTotal().toString()
         )).forEachOrdered(orderInfo -> {
             io.print(orderInfo);
         });
@@ -119,38 +189,60 @@ public class FlooringMasteryView {
         }
     }
     
-    public void displayExitBanner() {
-        io.print("Good Bye!!!");
-    }
-
-    public void displayUnknownCommandBanner() {
-        io.print("Unknown Command!!!");
-    }
-    
-    public void displayCreateSuccessBanner() {
-        io.print("\n* * * * * * Create Order Successful * * * * * *");
+    public String getRemoveOrderInfo() {
+        String date = io.readString("Please enter the order date (MM/DD/YYYY)");
+        String number = io.readString("Please enter the order number");
+        StringBuilder sb = new StringBuilder();
+        return sb.append(date).append("::").append(number).toString();
     }
     
-    public void displayCreateUnsuccessfulBanner() {
-        io.print("\n* * * * * * Create Order Unsuccessful * * * * * *");
+    public String getEditOrderDateOrderNumber() {
+        String date = io.readString("Please enter the order date (MM/DD/YYYY)");
+        String number = io.readString("Please enter the order number");
+        StringBuilder sb = new StringBuilder();
+        return sb.append(date).append("::").append(number).toString();
     }
     
-    public void displayWriteToBackupSuccessfulBanner() {
-        io.print("\n* * * * * * Write to backup file successful * * * * * *");
-    }
-    
-    public void displayWriteToBackupUnsuccessfulBanner() {
-        io.print("\n* * * * * * Write to backup file unsuccessful * * * * * *");
-    }
-    
-    public void displayLoadFilesSuccessfulBanner() {
-        io.print("\n* * * * * * Load files successful * * * * * *");
-    }
-    
-    public void displayLoadFilesUnsuccessfulBanner() {
-        io.print("\n* * * * * * Load files unsuccessful * * * * * *");
-    }    
-    public void print(String s) {
-        io.print(s);
+    public Order getEditOrderInfo(Order oldOrder, List<Product> products) {
+        String name = io.readString("Enter customer name (" + oldOrder.getCustomerName() + ")");
+        if (name.equals("")) {
+            name = oldOrder.getCustomerName();
+        }
+        
+        String state = io.readString("Enter a state (" + oldOrder.getState() + ")");
+        if (state.equals("")) {
+            state = oldOrder.getState();
+        }
+        
+        for (int i = 0; i < products.size(); i++) {
+            io.print((i + 1) + ". " + 
+                    "Type: " + 
+                    products.get(i).getProductType() + 
+                    "  Cost/sqr ft: $" + 
+                    products.get(i).getCostPerSquareFoot() + 
+                    "  Labor Cost/sqr ft: $" + 
+                    products.get(i).getLaborCostPerSquareFoot());
+        }
+        int type = io.readInt("Please select a product(" + oldOrder.getProductType().getProductType() + ")", 1, products.size());
+        
+        String area = io.readString("Please enter the area (" + oldOrder.getArea().toString() + ")");
+        if (area.equals("")) {
+            area = oldOrder.getArea().toString();
+        }
+        
+        try {
+            Order.decrementOrderCount();
+            Order order = new Order(
+                    oldOrder.getOrderDate(), 
+                    name.toUpperCase(), 
+                    state.toUpperCase(), 
+                    products.get(type - 1), 
+                    new BigDecimal(area),
+                    oldOrder.getOrderNumber());
+            return order;
+        } catch (NumberFormatException e) {
+            // io.print(e.getMessage());
+            return null;
+        }
     }
 }

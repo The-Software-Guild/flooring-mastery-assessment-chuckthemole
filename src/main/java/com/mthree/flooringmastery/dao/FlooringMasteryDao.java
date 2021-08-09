@@ -18,12 +18,11 @@ public interface FlooringMasteryDao {
     List<Order> getAllOrders(String date);
     boolean addOrder(int orderNumber, Order order);
     Order removeOrder(String date, int orderNumber);
-    Order editOrder(String date, int orderNumber);
+    Order editOrder(Order newOrder, int oldOrderNumber);
     boolean createOrderFile(String date);
     boolean isCorrectDateFormat(String date);
-    List<Product> loadProductsFromFile();
-    boolean loadFiles();
     public boolean writeOrderToFile(String file, Order order);
+    public boolean writeAllOrdersToFiles();
     public boolean writeAllOrdersToBackupFile();
     List<Product> getAllProducts();
 }

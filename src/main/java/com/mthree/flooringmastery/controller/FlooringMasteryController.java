@@ -28,7 +28,6 @@ public class FlooringMasteryController {
     public void run() {
         
         boolean keepGoing = true;
-        loadFiles();
         
         while (keepGoing) {
             int menuSelection = getMenuSelection();
@@ -45,6 +44,7 @@ public class FlooringMasteryController {
         }
         
         writeAllOrdersToBackupFile();
+        writeAllOrdersToFiles();
         exitMessage();
     }
     
@@ -72,15 +72,46 @@ public class FlooringMasteryController {
     }
     
     private void editOrder() {
+        view.displayEditOrderBanner();
+        String dateAndOrderNumber = view.getEditOrderDateOrderNumber();
+        String[] dateAndOrderNumberSplit = dateAndOrderNumber.split("::");
         
+        List<Order> orders = service.getAllOrders(dateAndOrderNumberSplit[0]);
+        Order foundOrder = null;
+        for(Order order : orders) {
+            if (order.getOrderNumber() == Integer.parseInt(dateAndOrderNumberSplit[1])) {
+                foundOrder = order;
+                break;
+            }
+        }
+        
+        if (foundOrder != null) {
+            view.displayEditOrderSuccessfulBanner();
+            List<Product> products = service.getAllProducts();
+            Order order = view.getEditOrderInfo(foundOrder, products);
+            view.print(service.editOrder(order, order.getOrderNumber()));
+        } else {
+            view.displayEditOrderUnsuccessfulBanner();
+        }
     }
     
     private void removeOrder() {
-        
+        view.displayRemoveOrderBanner();
+        String info = view.getRemoveOrderInfo();
+        String[] splitInfo = info.split("::");
+        if (service.removeOrder(splitInfo[0], Integer.parseInt(splitInfo[1])) != null) {
+            view.displayRemoveOrderSuccessfulBanner();
+        } else {
+            view.displayRemoveOrderUnsuccessfulBanner();
+        } 
     }
     
     private void exportAllData() {
-        
+        if(service.writeAllOrdersToBackupFile()) {
+            view.displayWriteToBackupSuccessfulBanner();
+        } else {
+            view.displayWriteToBackupUnsuccessfulBanner();
+        }
     }
     
     private int getMenuSelection() {
@@ -103,11 +134,11 @@ public class FlooringMasteryController {
         }
     }
     
-    private void loadFiles() {
-        if (service.loadFiles()) {
-            view.displayLoadFilesSuccessfulBanner();
+    private void writeAllOrdersToFiles() {
+        if (service.writeAllOrdersToFiles()) {
+            view.displayWriteToFilesSuccessfulBanner();
         } else {
-            view.displayLoadFilesUnsuccessfulBanner();
+            view.displayWriteToFilesUnsuccessfulBanner();
         }
     }
 }

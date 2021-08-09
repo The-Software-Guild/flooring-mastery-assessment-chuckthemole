@@ -1,3 +1,2 @@
 OrderNumber::CustomerName::State::TaxRate::ProductType::Area::CostPerSquareFoot::LaborCostPerSquareFoot::MaterialCost:LaborCost::Tax::Total
-1::FREDDY::CA::Tile::4::3.50::4.15::
-2::ERIC::CA::Wood::1::5.15::4.75::
+1::CHUCK::CA::25.00::Laminate::100::1.75::2.10::175.00::210.00::96.25::481.25

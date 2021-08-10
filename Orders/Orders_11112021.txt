@@ -1,3 +1,4 @@
 OrderNumber::CustomerName::State::TaxRate::ProductType::Area::CostPerSquareFoot::LaborCostPerSquareFoot::MaterialCost:LaborCost::Tax::Total
 1::YESSY::TX::4.45::Laminate::400::1.75::2.10::700.00::840.00::68.53::1608.53
 4::HARRY::TX::4.45::Tile::903::3.50::4.15::3160.50::3747.45::307.41::7215.36
+9::RONNIE::CA::25.00::Tile::400::3.50::4.15::1400.00::1660.00::765.00::3825.00

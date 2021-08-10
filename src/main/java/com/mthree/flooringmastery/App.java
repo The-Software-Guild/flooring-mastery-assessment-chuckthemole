@@ -52,6 +52,7 @@ public class App {
         FlooringMasteryController controller = 
                 ctx.getBean("controller", FlooringMasteryController.class);
         controller.run();
+        
         /*
         Scanner sc;
         List<Product> productsFromFile = new ArrayList<>();
